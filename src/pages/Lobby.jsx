@@ -2,16 +2,18 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { drawNames } from '../utils/matcher';
 
 export default function Lobby() {
   const { eventId } = useParams();
   const { user } = useAuth();
+  const { notify, confirmAction } = useNotification();
   const navigate = useNavigate();
   const [participants, setParticipants] = useState([]);
   const [myWishlist, setMyWishlist] = useState('');
   const [eventData, setEventData] = useState(null);
-  const [target, setTarget] = useState(null); // Store matched target info here
+  const [target, setTarget] = useState(null); 
   
   // Host Management Modal
   const [selectedParticipant, setSelectedParticipant] = useState(null);
@@ -28,7 +30,6 @@ export default function Lobby() {
       )
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventId}` }, 
         (payload) => {
-          // If event locks, refresh to trigger redirect logic in fetchData
           if (payload.new.status === 'LOCKED') fetchData();
         }
       )
@@ -38,12 +39,10 @@ export default function Lobby() {
   }, []);
 
   async function fetchData() {
-    // 1. Fetch Event
     const { data: ev, error: evError } = await supabase.from('events').select('*').eq('id', eventId).single();
     if (evError) console.error(evError);
     setEventData(ev);
 
-    // 2. Fetch Participants
     const { data: parts, error: partError } = await supabase
       .from('participants')
       .select('*')
@@ -54,7 +53,6 @@ export default function Lobby() {
     const safeParts = parts || [];
     let combinedParticipants = [];
 
-    // 3. Fetch Profiles for Participants
     if (safeParts.length > 0) {
       const userIds = safeParts.map(p => p.user_id);
       
@@ -74,19 +72,14 @@ export default function Lobby() {
 
     setParticipants(combinedParticipants);
     
-    // 4. Handle My User Logic (Wishlist & Redirects)
     if (user) {
       const me = combinedParticipants.find(p => p.user_id === user.id);
       if (me) {
           setMyWishlist(me.wishlist || '');
-          
-          // CHECK LOCKED STATUS
           if (ev?.status === 'LOCKED') {
               if (!me.is_revealed) {
-                  // If not revealed yet, go to Spin Wheel
                   navigate(`/reveal/${eventId}`);
               } else if (me.target_id) {
-                  // If revealed, fetch my target info to display HERE in Lobby
                   fetchTargetInfo(me.target_id);
               }
           }
@@ -95,14 +88,12 @@ export default function Lobby() {
   }
 
   async function fetchTargetInfo(targetId) {
-      // Fetch Target Profile
       const { data: profile } = await supabase
           .from('profiles')
           .select('username')
           .eq('id', targetId)
           .single();
 
-      // Fetch Target Wishlist
       const { data: part } = await supabase
           .from('participants')
           .select('wishlist')
@@ -121,7 +112,7 @@ export default function Lobby() {
       .update({ wishlist: myWishlist })
       .eq('event_id', eventId)
       .eq('user_id', user.id);
-    alert("Wishlist updated!");
+    notify("Wishlist updated!", "success");
   }
 
   // --- HOST FUNCTIONS ---
@@ -152,43 +143,53 @@ export default function Lobby() {
         })
         .eq('id', selectedParticipant.id);
     
-    if (error) alert(error.message);
+    if (error) notify(error.message, "error");
+    else notify("Constraints saved!", "success");
+    
     setSelectedParticipant(null);
   };
 
-  const removeParticipant = async () => {
+  const removeParticipant = () => {
     if (!selectedParticipant) return;
-    if (!confirm(`Are you sure you want to remove ${selectedParticipant.profiles.username} from this event?`)) return;
+    
+    confirmAction(
+      `Are you sure you want to remove ${selectedParticipant.profiles.username} from this event?`,
+      async () => {
+        const { error } = await supabase
+          .from('participants')
+          .delete()
+          .eq('id', selectedParticipant.id);
 
-    const { error } = await supabase
-      .from('participants')
-      .delete()
-      .eq('id', selectedParticipant.id);
-
-    if (error) {
-      alert("Error removing participant: " + error.message);
-    } else {
-      setSelectedParticipant(null);
-    }
+        if (error) {
+          notify("Error removing participant: " + error.message, "error");
+        } else {
+          notify("Participant removed.", "success");
+          setSelectedParticipant(null);
+        }
+      }
+    );
   };
 
-  async function handleStartEvent() {
-    if (!confirm("This will lock the room and draw names. Cannot be undone!")) return;
-
-    try {
-      const updates = drawNames(participants);
-      for (let update of updates) {
-         await supabase.from('participants')
-           .update({ target_id: update.target_id })
-           .eq('id', update.row_id);
+  const handleStartEvent = () => {
+    confirmAction(
+      "This will lock the room and draw names. It cannot be undone!",
+      async () => {
+        try {
+          const updates = drawNames(participants);
+          for (let update of updates) {
+             await supabase.from('participants')
+               .update({ target_id: update.target_id })
+               .eq('id', update.row_id);
+          }
+          await supabase.from('events').update({ status: 'LOCKED' }).eq('id', eventId);
+          fetchData();
+          notify("Event Started! Good luck!", "success");
+        } catch (err) {
+          notify(err.message, "error");
+        }
       }
-      await supabase.from('events').update({ status: 'LOCKED' }).eq('id', eventId);
-      // Refresh to trigger redirect
-      fetchData();
-    } catch (err) {
-      alert(err.message);
-    }
-  }
+    );
+  };
 
   return (
     <div className="container">

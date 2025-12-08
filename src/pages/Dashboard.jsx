@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { notify } = useNotification();
   const navigate = useNavigate();
   const [joinCode, setJoinCode] = useState('');
   const [myEvents, setMyEvents] = useState([]);
@@ -35,7 +37,7 @@ export default function Dashboard() {
 
   const createEvent = async (e) => {
     e.preventDefault();
-    if (!newEventName) return alert("Please enter a name");
+    if (!newEventName) return notify("Please enter a name", "error");
 
     const code = Math.floor(100000 + Math.random() * 900000).toString(); 
     
@@ -52,7 +54,7 @@ export default function Dashboard() {
       .single();
 
     if (error) {
-      alert("Error creating event: " + error.message);
+      notify("Error creating event: " + error.message, "error");
     } else {
       await joinEventLogic(code); 
     }
@@ -67,7 +69,7 @@ export default function Dashboard() {
     const { data: event, error: eventError } = await supabase
       .from('events').select('*').eq('code', code).single();
     
-    if (!event || eventError) return alert("Invalid Code");
+    if (!event || eventError) return notify("Invalid Code", "error");
     
     // Check if already joined
     const { data: existing } = await supabase
@@ -82,14 +84,14 @@ export default function Dashboard() {
         return;
     }
 
-    if (event.status !== 'LOBBY') return alert("Event has already started!");
+    if (event.status !== 'LOBBY') return notify("Event has already started!", "error");
 
     const { error: joinError } = await supabase
       .from('participants')
       .insert([{ event_id: event.id, user_id: user.id }]);
 
     if (joinError) { 
-      alert(joinError.message);
+      notify(joinError.message, "error");
     } else {
       navigate(`/lobby/${event.id}`);
     }
@@ -109,7 +111,7 @@ export default function Dashboard() {
         {/* Create Event Card */}
         <div className="card" style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', margin: 0}}>
           <div>
-            <h2>🎅 Host an Event!</h2>
+            <h2>🎅 Host an Event</h2>
             <p>Create a new Secret Santa room, set a budget, and invite friends.</p>
           </div>
           <button className="primary-action" onClick={() => setShowCreateModal(true)} style={{marginTop: '20px'}}>
@@ -122,7 +124,7 @@ export default function Dashboard() {
 
         {/* Join Event Card */}
         <div className="card" style={{margin: 0}}>
-          <h2>☃️ Join an Event!</h2>
+          <h2>☃️ Join an Event</h2>
           <p>Enter the 6-digit code provided by your group host.</p>
           <form onSubmit={handleJoin} style={{marginTop: '20px', display: 'flex', gap: '10px'}}>
             <input 
@@ -172,7 +174,7 @@ export default function Dashboard() {
             <form onSubmit={createEvent}>
               <label><strong>Lobby Name</strong></label>
               <input 
-                placeholder="e.g. Natal Keluarga 2025" 
+                placeholder="e.g. Office Party 2024" 
                 value={newEventName}
                 onChange={e => setNewEventName(e.target.value)}
                 autoFocus
@@ -180,7 +182,7 @@ export default function Dashboard() {
               
               <label><strong>Budget (Optional)</strong></label>
               <input 
-                placeholder="e.g. 100k - 250k" 
+                placeholder="e.g. $20 - $50" 
                 value={newEventBudget}
                 onChange={e => setNewEventBudget(e.target.value)}
               />

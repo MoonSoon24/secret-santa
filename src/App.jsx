@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext'; // Import this
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Lobby from './pages/Lobby';
@@ -41,36 +42,38 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
-        {/* Floating Controls */}
-        <div className="floating-controls">
-          <button 
-            className="float-btn" 
-            onClick={() => setShowSnow(!showSnow)} 
-            title={showSnow ? "Disable Snow" : "Enable Snow"}
-          >
-            {showSnow ? '❄️' : '🚫'}
-          </button>
-          
-          <button 
-            className="float-btn" 
-            onClick={() => setDarkMode(!darkMode)}
-            title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-        </div>
+      <NotificationProvider> {/* Wrap everything here */}
+        <BrowserRouter>
+          {/* Floating Controls */}
+          <div className="floating-controls">
+            <button 
+              className="float-btn" 
+              onClick={() => setShowSnow(!showSnow)} 
+              title={showSnow ? "Disable Snow" : "Enable Snow"}
+            >
+              {showSnow ? '❄️' : '🚫'}
+            </button>
+            
+            <button 
+              className="float-btn" 
+              onClick={() => setDarkMode(!darkMode)}
+              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+          </div>
 
-        {/* Snow Overlay */}
-        {showSnow && <Snowflakes />}
+          {/* Snow Overlay */}
+          {showSnow && <Snowflakes />}
 
-        <Routes>
-          <Route path="/" element={<Auth />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/lobby/:eventId" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
-          <Route path="/reveal/:eventId" element={<ProtectedRoute><Reveal /></ProtectedRoute>} />
-        </Routes>
-      </BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Auth />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/lobby/:eventId" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
+            <Route path="/reveal/:eventId" element={<ProtectedRoute><Reveal /></ProtectedRoute>} />
+          </Routes>
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

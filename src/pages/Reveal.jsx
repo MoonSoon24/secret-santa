@@ -2,10 +2,12 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 export default function Reveal() {
   const { eventId } = useParams();
   const { user } = useAuth();
+  const { notify, confirmAction } = useNotification();
   const navigate = useNavigate();
   
   const [target, setTarget] = useState(null);
@@ -21,11 +23,9 @@ export default function Reveal() {
 
   useEffect(() => {
     async function initData() {
-      // 1. Check if host
       const { data: event } = await supabase.from('events').select('host_id').eq('id', eventId).single();
       if (event?.host_id === user.id) setIsHost(true);
 
-      // 2. Fetch My Participant Row to check revealed status
       const { data: myRow } = await supabase
         .from('participants')
         .select('*')
@@ -34,14 +34,12 @@ export default function Reveal() {
         .single();
 
       if (myRow) {
-          // GUARD: If already revealed, go back to lobby
           if (myRow.is_revealed) {
               navigate(`/lobby/${eventId}`);
               return;
           }
 
           if (myRow.target_id) {
-            // Fetch Target Details
             const { data: targetParticipant } = await supabase
               .from('participants')
               .select('wishlist')
@@ -63,7 +61,6 @@ export default function Reveal() {
           }
       }
 
-      // 3. Fetch ALL participants (for wheel)
       const { data: allParts } = await supabase
         .from('participants')
         .select('user_id')
@@ -88,20 +85,17 @@ export default function Reveal() {
     if (!target || wheelNames.length === 0) return;
     setIsSpinning(true);
 
-    // 1. Find the index of the winner
     const winnerIndex = wheelNames.findIndex(p => p.id === target.id);
     if (winnerIndex === -1) {
-        alert("Error: Target not found in wheel list.");
+        notify("Error: Target not found in wheel list.", "error");
         setIsSpinning(false);
         return;
     }
 
-    // 2. Calculate Geometry
     const segmentCount = wheelNames.length;
     const segmentAngle = 360 / segmentCount;
     const winnerCenterAngle = (winnerIndex * segmentAngle) + (segmentAngle / 2);
     
-    // Spin logic: 8 full spins + alignment
     const extraSpins = 360 * 8; 
     const totalRotation = extraSpins - winnerCenterAngle;
 
@@ -110,9 +104,7 @@ export default function Reveal() {
         wheelRef.current.style.transform = `rotate(${totalRotation}deg)`;
     }
 
-    // 3. Reveal and Update Database
     setTimeout(async () => {
-        // Mark as revealed in DB
         await supabase.from('participants')
             .update({ is_revealed: true })
             .eq('event_id', eventId)
@@ -122,14 +114,15 @@ export default function Reveal() {
     }, 5500);
   };
 
-  const handleResetEvent = async () => {
-    if (!confirm("Are you sure? This will RESET all matches and send everyone back to the lobby.")) return;
-    
-    // Reset targets AND revealed status for everyone
-    await supabase.from('participants').update({ target_id: null, is_revealed: false }).eq('event_id', eventId);
-    await supabase.from('events').update({ status: 'LOBBY' }).eq('id', eventId);
-    
-    window.location.href = `/lobby/${eventId}`;
+  const handleResetEvent = () => {
+    confirmAction(
+      "Are you sure? This will RESET all matches and send everyone back to the lobby.",
+      async () => {
+        await supabase.from('participants').update({ target_id: null, is_revealed: false }).eq('event_id', eventId);
+        await supabase.from('events').update({ status: 'LOBBY' }).eq('id', eventId);
+        window.location.href = `/lobby/${eventId}`;
+      }
+    );
   };
 
   if (!target) return <div className="container" style={{color: 'white', textAlign: 'center'}}>Loading secret info...</div>;
