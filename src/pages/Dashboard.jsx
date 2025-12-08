@@ -182,7 +182,7 @@ export default function Dashboard() {
               
               <label><strong>Budget (Optional)</strong></label>
               <input 
-                placeholder="e.g. $20 - $50" 
+                placeholder="e.g. 100k - 250k" 
                 value={newEventBudget}
                 onChange={e => setNewEventBudget(e.target.value)}
               />

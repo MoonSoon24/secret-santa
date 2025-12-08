@@ -197,7 +197,7 @@ export default function Lobby() {
         <h1>{eventData?.name || "Secret Santa"}</h1>
         <p style={{color: 'var(--text-main)', background: 'rgba(255,255,255,0.8)', display:'inline-block', padding: '5px 15px', borderRadius: '15px'}}>
             Code: <strong style={{color: 'var(--primary)'}}>{eventData?.code}</strong> 
-            {eventData?.budget && ` • Budget: ${eventData.budget}`}
+            {eventData?.budget && ` • Budget: Rp.${eventData.budget}`}
         </p>
       </div>
 
