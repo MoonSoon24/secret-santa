@@ -1,25 +1,59 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [joinCode, setJoinCode] = useState('');
+  const [myEvents, setMyEvents] = useState([]);
+  
+  // Modal State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newEventName, setNewEventName] = useState('');
+  const [newEventBudget, setNewEventBudget] = useState('');
 
-  const createEvent = async () => {
-    const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit code
+  useEffect(() => {
+    if (user) fetchMyEvents();
+  }, [user]);
+
+  const fetchMyEvents = async () => {
+    // Fetch events where the current user is a participant
+    const { data: participations, error } = await supabase
+      .from('participants')
+      .select('event_id, events(*)')
+      .eq('user_id', user.id);
+
+    if (error) console.error(error);
+    else {
+      // Flatten the structure
+      const events = participations.map(p => p.events).filter(Boolean);
+      setMyEvents(events);
+    }
+  };
+
+  const createEvent = async (e) => {
+    e.preventDefault();
+    if (!newEventName) return alert("Please enter a name");
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString(); 
+    
     const { data, error } = await supabase
       .from('events')
-      .insert([{ code, host_id: user.id, status: 'LOBBY' }])
+      .insert([{ 
+        code, 
+        host_id: user.id, 
+        status: 'LOBBY',
+        name: newEventName,
+        budget: newEventBudget || 'No Limit'
+      }])
       .select()
       .single();
 
     if (error) {
-      alert("Error creating event");
+      alert("Error creating event: " + error.message);
     } else {
-      // Auto-join the host
       await joinEventLogic(code); 
     }
   };
@@ -30,19 +64,31 @@ export default function Dashboard() {
   };
 
   const joinEventLogic = async (code) => {
-    // 1. Find Event
     const { data: event, error: eventError } = await supabase
       .from('events').select('*').eq('code', code).single();
     
     if (!event || eventError) return alert("Invalid Code");
+    
+    // Check if already joined
+    const { data: existing } = await supabase
+        .from('participants')
+        .select('*')
+        .eq('event_id', event.id)
+        .eq('user_id', user.id)
+        .single();
+        
+    if (existing) {
+        navigate(`/lobby/${event.id}`);
+        return;
+    }
+
     if (event.status !== 'LOBBY') return alert("Event has already started!");
 
-    // 2. Join Event
     const { error: joinError } = await supabase
       .from('participants')
       .insert([{ event_id: event.id, user_id: user.id }]);
 
-    if (joinError && joinError.code !== '23505') { // 23505 = duplicate key (already joined)
+    if (joinError) { 
       alert(joinError.message);
     } else {
       navigate(`/lobby/${event.id}`);
@@ -51,23 +97,99 @@ export default function Dashboard() {
 
   return (
     <div className="container">
-      <h1>Dashboard</h1>
-      <div className="card">
-        <h2>Create New Event</h2>
-        <button onClick={createEvent}>Create Event & Get Code</button>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+        <h1>Dashboard</h1>
+        <button className="outline" onClick={() => supabase.auth.signOut()} style={{width: 'auto'}}>
+          Sign Out
+        </button>
       </div>
-      <div className="card">
-        <h2>Join Event</h2>
-        <form onSubmit={handleJoin}>
-          <input 
-            placeholder="Enter 6-digit Code" 
-            value={joinCode} 
-            onChange={e => setJoinCode(e.target.value)} 
-          />
-          <button>Join</button>
-        </form>
+
+      <div className="dashboard-grid fade-in">
+        
+        {/* Create Event Card */}
+        <div className="card" style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', margin: 0}}>
+          <div>
+            <h2>🎅 Host an Event!</h2>
+            <p>Create a new Secret Santa room, set a budget, and invite friends.</p>
+          </div>
+          <button className="primary-action" onClick={() => setShowCreateModal(true)} style={{marginTop: '20px'}}>
+            Create New Group
+          </button>
+        </div>
+
+        {/* Separator */}
+        <div className="or-divider">OR</div>
+
+        {/* Join Event Card */}
+        <div className="card" style={{margin: 0}}>
+          <h2>☃️ Join an Event!</h2>
+          <p>Enter the 6-digit code provided by your group host.</p>
+          <form onSubmit={handleJoin} style={{marginTop: '20px', display: 'flex', gap: '10px'}}>
+            <input 
+              placeholder="123456" 
+              value={joinCode} 
+              onChange={e => setJoinCode(e.target.value)} 
+              style={{fontSize: '1.2rem', letterSpacing: '2px', textAlign: 'center', margin: 0}}
+            />
+            <button style={{width: 'auto'}}>Join</button>
+          </form>
+        </div>
       </div>
-      <button onClick={() => supabase.auth.signOut()} style={{marginTop: '20px'}}>Sign Out</button>
+
+      {/* My Events List */}
+      <div className="card fade-in" style={{marginTop: '30px'}}>
+        <h3>📅 Your Events</h3>
+        {myEvents.length === 0 ? (
+          <p style={{color: '#999', fontStyle: 'italic'}}>You haven't joined any events yet.</p>
+        ) : (
+          <ul>
+            {myEvents.map(ev => (
+              <li key={ev.id}>
+                <div>
+                    <strong>{ev.name || "Secret Santa Event"}</strong>
+                    <span style={{fontSize: '0.8em', color: '#666', marginLeft: '10px'}}>
+                        (Code: {ev.code})
+                    </span>
+                </div>
+                {/* Always link to Lobby, let Lobby decide logic */}
+                <Link to={`/lobby/${ev.id}`}>
+                    <button className="icon-btn">
+                        {ev.status === 'LOCKED' ? '🎁 View Gift' : '👉 Enter Lobby'}
+                    </button>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Create Modal */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowCreateModal(false)}>×</button>
+            <h2 style={{textAlign: 'center', marginBottom: '20px'}}>Create New Lobby</h2>
+            <form onSubmit={createEvent}>
+              <label><strong>Lobby Name</strong></label>
+              <input 
+                placeholder="e.g. Natal Keluarga 2025" 
+                value={newEventName}
+                onChange={e => setNewEventName(e.target.value)}
+                autoFocus
+              />
+              
+              <label><strong>Budget (Optional)</strong></label>
+              <input 
+                placeholder="e.g. 100k - 250k" 
+                value={newEventBudget}
+                onChange={e => setNewEventBudget(e.target.value)}
+              />
+
+              <button className="primary-action" style={{marginTop: '10px'}}>Create & Join</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
