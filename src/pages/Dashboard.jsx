@@ -146,7 +146,7 @@ export default function Dashboard() {
 
         {/* Join Event Card */}
         <div className="card" style={{margin: 0}}>
-          <h2>🎫 {t('joinEventTitle')}</h2>
+          <h2>🎁 {t('joinEventTitle')}</h2>
           <p>{t('joinEventDesc')}</p>
           <form onSubmit={handleJoin} style={{marginTop: '20px', display: 'flex', gap: '10px'}}>
             <input 
@@ -162,7 +162,7 @@ export default function Dashboard() {
 
       {/* My Events List */}
       <div className="card fade-in" style={{marginTop: '30px'}}>
-        <h3>📅 {t('yourEvents')}</h3>
+        <h3>🎄 {t('yourEvents')}</h3>
         {myEvents.length === 0 ? (
           <p style={{color: '#999', fontStyle: 'italic'}}>{t('noEvents')}</p>
         ) : (
@@ -178,7 +178,7 @@ export default function Dashboard() {
                 {/* Always link to Lobby, let Lobby decide logic */}
                 <Link to={`/lobby/${ev.id}`}>
                     <button className="icon-btn">
-                        {ev.status === 'LOCKED' ? `🎁 ${t('viewGift')}` : `🚪 ${t('enterLobby')}`}
+                         🚪 {t('enterLobby')}
                     </button>
                 </Link>
               </li>

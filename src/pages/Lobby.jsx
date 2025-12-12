@@ -33,6 +33,7 @@ export default function Lobby() {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${eventId}` }, 
         (payload) => {
           if (payload.new.status === 'LOCKED') fetchData();
+          if (payload.new.status === 'LOBBY') fetchData();
         }
       )
       .subscribe();
@@ -44,6 +45,11 @@ export default function Lobby() {
     const { data: ev, error: evError } = await supabase.from('events').select('*').eq('id', eventId).single();
     if (evError) console.error(evError);
     setEventData(ev);
+
+    // Clear target if event was reset to lobby
+    if (ev?.status === 'LOBBY') {
+        setTarget(null);
+    }
 
     const { data: parts, error: partError } = await supabase
       .from('participants')
@@ -193,6 +199,27 @@ export default function Lobby() {
     );
   };
 
+  const handleUndoSpin = () => {
+    confirmAction(
+      "Are you sure? This will RESET all matches and send everyone back to the lobby.",
+      async () => {
+        // Reset participants
+        await supabase.from('participants')
+            .update({ target_id: null, is_revealed: false })
+            .eq('event_id', eventId);
+        
+        // Unlock event
+        await supabase.from('events')
+            .update({ status: 'LOBBY' })
+            .eq('id', eventId);
+        
+        setTarget(null);
+        fetchData();
+        notify("Event reset! Constraints can be modified now.", "success");
+      }
+    );
+  };
+
   return (
     <div className="container">
       <div style={{textAlign: 'center', marginBottom: '30px'}}>
@@ -233,8 +260,8 @@ export default function Lobby() {
                     </div>
                 </div>
                 
-                {/* Host Controls */}
-                {eventData?.host_id === user?.id && (
+                {/* Host Controls - Hidden if Locked */}
+                {eventData?.host_id === user?.id && eventData?.status === 'LOBBY' && (
                     <button className="icon-btn" onClick={() => openConstraintModal(p)}>⚙️</button>
                 )}
               </li>
@@ -255,16 +282,36 @@ export default function Lobby() {
         </div>
       </div>
 
-      {eventData?.host_id === user?.id && !target && (
+      {/* Start / Undo Section */}
+      {eventData?.host_id === user?.id && (
         <div style={{marginTop: '30px', textAlign: 'center'}}>
-          <button 
-            className="primary-action"
-            onClick={handleStartEvent} 
-            style={{ padding: '15px 40px', fontSize: '1.2rem' }}
-          >
-            🚀 {t('startEvent')}
-          </button>
-          <p style={{color: 'rgba(255,255,255,0.7)', marginTop: '10px'}}>{t('startEventHelp')}</p>
+          {eventData.status === 'LOBBY' ? (
+             !target && (
+              <>
+                <button 
+                  className="primary-action"
+                  onClick={handleStartEvent} 
+                  style={{ padding: '15px 40px', fontSize: '1.2rem' }}
+                >
+                  🚀 {t('startEvent')}
+                </button>
+                <p style={{color: 'rgba(255,255,255,0.7)', marginTop: '10px'}}>{t('startEventHelp')}</p>
+              </>
+             )
+          ) : (
+            <button 
+                onClick={handleUndoSpin} 
+                style={{
+                  background: 'rgba(0,0,0,0.5)', 
+                  fontSize: '1rem', 
+                  width: 'auto', 
+                  border: '1px solid rgba(255,255,255,0.3)', 
+                  color: 'white'
+                }}
+            >
+                🔄 {t('resetEvent')}
+            </button>
+          )}
         </div>
       )}
 
