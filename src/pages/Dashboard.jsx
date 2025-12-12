@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { notify } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [joinCode, setJoinCode] = useState('');
   const [myEvents, setMyEvents] = useState([]);
@@ -100,9 +102,9 @@ export default function Dashboard() {
   return (
     <div className="container">
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-        <h1>Dashboard</h1>
+        <h1>{t('dashboard')}</h1>
         <button className="outline" onClick={() => supabase.auth.signOut()} style={{width: 'auto'}}>
-          Sign Out
+          {t('signOut')}
         </button>
       </div>
 
@@ -111,11 +113,11 @@ export default function Dashboard() {
         {/* Create Event Card */}
         <div className="card" style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', margin: 0}}>
           <div>
-            <h2>🎅 Host an Event</h2>
-            <p>Create a new Secret Santa room, set a budget, and invite friends.</p>
+            <h2>🎅 {t('hostEventTitle')}</h2>
+            <p>{t('hostEventDesc')}</p>
           </div>
           <button className="primary-action" onClick={() => setShowCreateModal(true)} style={{marginTop: '20px'}}>
-            Create New Group
+            {t('createNewGroup')}
           </button>
         </div>
 
@@ -124,8 +126,8 @@ export default function Dashboard() {
 
         {/* Join Event Card */}
         <div className="card" style={{margin: 0}}>
-          <h2>☃️ Join an Event</h2>
-          <p>Enter the 6-digit code provided by your group host.</p>
+          <h2>🎫 {t('joinEventTitle')}</h2>
+          <p>{t('joinEventDesc')}</p>
           <form onSubmit={handleJoin} style={{marginTop: '20px', display: 'flex', gap: '10px'}}>
             <input 
               placeholder="123456" 
@@ -133,16 +135,16 @@ export default function Dashboard() {
               onChange={e => setJoinCode(e.target.value)} 
               style={{fontSize: '1.2rem', letterSpacing: '2px', textAlign: 'center', margin: 0}}
             />
-            <button style={{width: 'auto'}}>Join</button>
+            <button style={{width: 'auto'}}>{t('joinButton')}</button>
           </form>
         </div>
       </div>
 
       {/* My Events List */}
       <div className="card fade-in" style={{marginTop: '30px'}}>
-        <h3>📅 Your Events</h3>
+        <h3>📅 {t('yourEvents')}</h3>
         {myEvents.length === 0 ? (
-          <p style={{color: '#999', fontStyle: 'italic'}}>You haven't joined any events yet.</p>
+          <p style={{color: '#999', fontStyle: 'italic'}}>{t('noEvents')}</p>
         ) : (
           <ul>
             {myEvents.map(ev => (
@@ -150,13 +152,13 @@ export default function Dashboard() {
                 <div>
                     <strong>{ev.name || "Secret Santa Event"}</strong>
                     <span style={{fontSize: '0.8em', color: '#666', marginLeft: '10px'}}>
-                        (Code: {ev.code})
+                        ({t('code')}: {ev.code})
                     </span>
                 </div>
                 {/* Always link to Lobby, let Lobby decide logic */}
                 <Link to={`/lobby/${ev.id}`}>
                     <button className="icon-btn">
-                        {ev.status === 'LOCKED' ? '🎁 View Gift' : '👉 Enter Lobby'}
+                        {ev.status === 'LOCKED' ? `🎁 ${t('viewGift')}` : `🚪 ${t('enterLobby')}`}
                     </button>
                 </Link>
               </li>
@@ -170,24 +172,24 @@ export default function Dashboard() {
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setShowCreateModal(false)}>×</button>
-            <h2 style={{textAlign: 'center', marginBottom: '20px'}}>Create New Lobby</h2>
+            <h2 style={{textAlign: 'center', marginBottom: '20px'}}>{t('createLobbyModalTitle')}</h2>
             <form onSubmit={createEvent}>
-              <label><strong>Lobby Name</strong></label>
+              <label><strong>{t('lobbyNameLabel')}</strong></label>
               <input 
-                placeholder="e.g. Office Party 2024" 
+                placeholder={t('lobbyNamePlaceholder')}
                 value={newEventName}
                 onChange={e => setNewEventName(e.target.value)}
                 autoFocus
               />
               
-              <label><strong>Budget (Optional)</strong></label>
+              <label><strong>{t('budgetLabel')}</strong></label>
               <input 
-                placeholder="e.g. 100k - 250k" 
+                placeholder={t('budgetPlaceholder')}
                 value={newEventBudget}
                 onChange={e => setNewEventBudget(e.target.value)}
               />
 
-              <button className="primary-action" style={{marginTop: '10px'}}>Create & Join</button>
+              <button className="primary-action" style={{marginTop: '10px'}}>{t('createAndJoin')}</button>
             </form>
           </div>
         </div>

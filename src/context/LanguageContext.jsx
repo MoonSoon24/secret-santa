@@ -24,12 +24,65 @@ export const translations = {
     useExisting: "Use existing account",
     createNew: "Create a new account",
     
-    // Modal
+    // Dashboard
+    dashboard: "Dashboard",
+    signOut: "Sign Out",
+    hostEventTitle: "Host an Event",
+    hostEventDesc: "Create a new Secret Santa room, set a budget, and invite friends.",
+    createNewGroup: "Create New Group",
+    joinEventTitle: "Join an Event",
+    joinEventDesc: "Enter the 6-digit code provided by your group host.",
+    joinButton: "Join",
+    yourEvents: "Your Events",
+    noEvents: "You haven't joined any events yet.",
+    viewGift: "View Gift",
+    enterLobby: "Enter Lobby",
+    createLobbyModalTitle: "Create New Lobby",
+    lobbyNameLabel: "Lobby Name",
+    lobbyNamePlaceholder: "e.g. Office Party 2024",
+    budgetLabel: "Budget (Optional)",
+    budgetPlaceholder: "e.g. 100k - 250k",
+    createAndJoin: "Create & Join",
+    
+    // Lobby
+    code: "Code",
+    budget: "Budget",
+    giftingTo: "You are gifting to",
+    theirWishlist: "Their Wishlist",
+    noWishlist: "They didn't ask for anything specific! Get creative! 🎨",
+    participants: "Participants",
+    hostTag: "Host",
+    yourWishlistTitle: "Your Wishlist",
+    wishlistHelp: "Help your Secret Santa by listing things you like!",
+    wishlistPlaceholder: "I love vintage mugs, sci-fi books, and dark chocolate...",
+    saveWishlist: "Save Wishlist",
+    startEvent: "START EVENT (HOST ONLY)",
+    startEventHelp: "Only click this when everyone has joined!",
+    manage: "Manage",
+    exclusionGroup: "Exclusion Group",
+    exclusionGroupHelp: "Cannot match with others in same group (e.g. \"Couple\").",
+    strictPool: "Strict Inclusion Pool",
+    strictPoolHelp: "Can ONLY match with others in this pool (e.g. \"Kids\").",
+    specificExclusions: "Specific Exclusions",
+    specificExclusionsHelp: "Select people this user CANNOT draw.",
+    saveConstraints: "Save Constraints",
+    removeParticipant: "Remove Participant",
+    
+    // Reveal
+    secretTarget: "Your Secret Target",
+    spinText: "The names are loaded. Spin to find out!",
+    spinButton: "SPIN TO REVEAL",
+    spinning: "Spinning...",
+    backToLobby: "Back to Lobby",
+    hostControls: "Host Controls",
+    resetEvent: "Reset Event (Unlock Lobby)",
+    loadingSecret: "Loading secret info...",
+    unknown: "Unknown",
+
+    // Modal & General
     chooseLanguage: "Choose your language",
     english: "English",
     indonesia: "Indonesia",
-    
-    // General
     loading: "Loading...",
   },
   id: {
@@ -53,12 +106,65 @@ export const translations = {
     useExisting: "Gunakan akun yang sudah ada",
     createNew: "Buat akun baru untuk memulai",
 
-    // Modal
+    // Dashboard
+    dashboard: "Dasbor",
+    signOut: "Keluar",
+    hostEventTitle: "Adakan Acara",
+    hostEventDesc: "Buat ruang Secret Santa baru, atur anggaran, dan undang teman.",
+    createNewGroup: "Buat Grup Baru",
+    joinEventTitle: "Gabung Acara",
+    joinEventDesc: "Masukkan 6 digit kode yang diberikan oleh tuan rumah.",
+    joinButton: "Gabung",
+    yourEvents: "Acara Anda",
+    noEvents: "Anda belum bergabung dengan acara apa pun.",
+    viewGift: "Lihat Kado",
+    enterLobby: "Masuk Lobi",
+    createLobbyModalTitle: "Buat Lobi Baru",
+    lobbyNameLabel: "Nama Lobi",
+    lobbyNamePlaceholder: "cth. Pesta Kantor 2024",
+    budgetLabel: "Anggaran (Opsional)",
+    budgetPlaceholder: "cth. 100rb - 250rb",
+    createAndJoin: "Buat & Gabung",
+
+    // Lobby
+    code: "Kode",
+    budget: "Anggaran",
+    giftingTo: "Anda memberi kado untuk",
+    theirWishlist: "Keinginan Mereka",
+    noWishlist: "Mereka tidak meminta sesuatu yang spesifik! Berkreasilah! 🎨",
+    participants: "Peserta",
+    hostTag: "Tuan Rumah",
+    yourWishlistTitle: "Keinginan Anda",
+    wishlistHelp: "Bantu Secret Santa Anda dengan mencantumkan hal-hal yang Anda sukai!",
+    wishlistPlaceholder: "Saya suka cangkir antik, buku sci-fi, dan cokelat hitam...",
+    saveWishlist: "Simpan Keinginan",
+    startEvent: "MULAI ACARA (KHUSUS TUAN RUMAH)",
+    startEventHelp: "Klik ini hanya jika semua orang sudah bergabung!",
+    manage: "Kelola",
+    exclusionGroup: "Grup Pengecualian",
+    exclusionGroupHelp: "Tidak bisa cocok dengan orang lain di grup yang sama (cth. \"Pasangan\").",
+    strictPool: "Kolam Inklusi Ketat",
+    strictPoolHelp: "HANYA bisa cocok dengan orang lain di kolam ini (cth. \"Anak-anak\").",
+    specificExclusions: "Pengecualian Khusus",
+    specificExclusionsHelp: "Pilih orang yang TIDAK BISA didapatkan pengguna ini.",
+    saveConstraints: "Simpan Batasan",
+    removeParticipant: "Hapus Peserta",
+
+    // Reveal
+    secretTarget: "Target Rahasia Anda",
+    spinText: "Nama sudah dimuat. Putar untuk mengetahui!",
+    spinButton: "PUTAR UNTUK MENGUNGKAP",
+    spinning: "Memutar...",
+    backToLobby: "Kembali ke Lobi",
+    hostControls: "Kontrol Tuan Rumah",
+    resetEvent: "Atur Ulang Acara (Buka Lobi)",
+    loadingSecret: "Memuat info rahasia...",
+    unknown: "Tidak Diketahui",
+
+    // Modal & General
     chooseLanguage: "Pilih Bahasa Anda",
     english: "Inggris",
     indonesia: "Indonesia",
-
-    // General
     loading: "Memuat...",
   }
 };

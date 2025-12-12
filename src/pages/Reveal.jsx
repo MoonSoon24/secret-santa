@@ -3,11 +3,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Reveal() {
   const { eventId } = useParams();
   const { user } = useAuth();
   const { notify, confirmAction } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   
   const [target, setTarget] = useState(null);
@@ -56,7 +58,7 @@ export default function Reveal() {
             setTarget({
                 id: targetProfile?.id,
                 wishlist: targetParticipant?.wishlist,
-                profiles: targetProfile || { username: 'Unknown' }
+                profiles: targetProfile || { username: t('unknown') }
             });
           }
       }
@@ -125,7 +127,7 @@ export default function Reveal() {
     );
   };
 
-  if (!target) return <div className="container" style={{color: 'white', textAlign: 'center'}}>Loading secret info...</div>;
+  if (!target) return <div className="container" style={{color: 'white', textAlign: 'center'}}>{t('loadingSecret')}</div>;
 
   const gradientString = wheelNames.map((_, i) => {
     const start = (i / wheelNames.length) * 100;
@@ -136,11 +138,11 @@ export default function Reveal() {
 
   return (
     <div className="container" style={{ textAlign: 'center', minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-      <h1>Your Secret Target</h1>
+      <h1>{t('secretTarget')}</h1>
       
       {!revealed ? (
         <div className="fade-in">
-          <p style={{color: 'white', marginBottom: '30px', fontSize: '1.2rem'}}>The names are loaded. Spin to find out!</p>
+          <p style={{color: 'white', marginBottom: '30px', fontSize: '1.2rem'}}>{t('spinText')}</p>
           
           <div className="wheel-container">
             <div className="wheel-arrow"></div>
@@ -174,35 +176,35 @@ export default function Reveal() {
             disabled={isSpinning}
             style={{ padding: '20px 50px', fontSize: '1.5rem', boxShadow: '0 0 30px rgba(255,215,0,0.5)' }}
           >
-            {isSpinning ? "Spinning..." : "SPIN TO REVEAL"}
+            {isSpinning ? t('spinning') : t('spinButton')}
           </button>
         </div>
       ) : (
         <div className="card reveal-box slide-up">
-          <h2 style={{color: '#888', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px'}}>You are gifting to</h2>
+          <h2 style={{color: '#888', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px'}}>{t('giftingTo')}</h2>
           <h1 style={{ color: 'var(--primary)', fontSize: '3rem', margin: '10px 0' }}>
             {target.profiles.username}
           </h1>
           <hr style={{margin: '20px 0', border: '0', borderTop: '1px solid #ddd'}} />
           
           <div style={{textAlign: 'left'}}>
-            <h3>Their Wishlist:</h3>
+            <h3>{t('theirWishlist')}:</h3>
             <div className="wishlist-text">
-              {target.wishlist || "They didn't ask for anything specific! Get creative! 🎨"}
+              {target.wishlist || t('noWishlist')}
             </div>
           </div>
           
           <Link to={`/lobby/${eventId}`} style={{display: 'inline-block', marginTop: '30px', textDecoration: 'none'}}>
-            <button className="outline" style={{borderColor: '#ccc', color: '#888'}}>Back to Lobby</button>
+            <button className="outline" style={{borderColor: '#ccc', color: '#888'}}>{t('backToLobby')}</button>
           </Link>
         </div>
       )}
 
       {isHost && (
         <div style={{marginTop: '50px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '20px'}}>
-            <p style={{color: '#aaa', fontSize: '0.8rem'}}>Host Controls</p>
+            <p style={{color: '#aaa', fontSize: '0.8rem'}}>{t('hostControls')}</p>
             <button onClick={handleResetEvent} style={{background: 'rgba(0,0,0,0.5)', fontSize: '0.9rem', width: 'auto'}}>
-                🔄 Reset Event (Unlock Lobby)
+                🔄 {t('resetEvent')}
             </button>
         </div>
       )}

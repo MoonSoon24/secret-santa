@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { drawNames } from '../utils/matcher';
 
 export default function Lobby() {
   const { eventId } = useParams();
   const { user } = useAuth();
   const { notify, confirmAction } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [participants, setParticipants] = useState([]);
   const [myWishlist, setMyWishlist] = useState('');
@@ -65,7 +67,7 @@ export default function Lobby() {
         const profile = profiles?.find(prof => prof.id === p.user_id);
         return {
           ...p,
-          profiles: profile || { username: 'Unknown' }
+          profiles: profile || { username: t('unknown') }
         };
       });
     }
@@ -102,7 +104,7 @@ export default function Lobby() {
           .single();
       
       setTarget({
-          username: profile?.username || 'Unknown',
+          username: profile?.username || t('unknown'),
           wishlist: part?.wishlist
       });
   }
@@ -153,7 +155,7 @@ export default function Lobby() {
     if (!selectedParticipant) return;
     
     confirmAction(
-      `Are you sure you want to remove ${selectedParticipant.profiles.username} from this event?`,
+      `Are you sure you want to remove ${selectedParticipant.profiles.username}?`,
       async () => {
         const { error } = await supabase
           .from('participants')
@@ -196,20 +198,20 @@ export default function Lobby() {
       <div style={{textAlign: 'center', marginBottom: '30px'}}>
         <h1>{eventData?.name || "Secret Santa"}</h1>
         <p style={{color: 'var(--text-main)', background: 'rgba(255,255,255,0.8)', display:'inline-block', padding: '5px 15px', borderRadius: '15px'}}>
-            Code: <strong style={{color: 'var(--primary)'}}>{eventData?.code}</strong> 
-            {eventData?.budget && ` • Budget: Rp.${eventData.budget}`}
+            {t('code')}: <strong style={{color: 'var(--primary)'}}>{eventData?.code}</strong> 
+            {eventData?.budget && ` • ${t('budget')}: Rp.${eventData.budget}`}
         </p>
       </div>
 
       {/* --- SHOW TARGET IF REVEALED --- */}
       {target && (
         <div className="card fade-in" style={{border: '4px solid var(--gold)', background: '#fffbeb', textAlign: 'center'}}>
-            <h2 style={{color: '#888', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '0'}}>🎁 You are gifting to:</h2>
+            <h2 style={{color: '#888', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '0'}}>🎁 {t('giftingTo')}:</h2>
             <h1 style={{color: 'var(--primary)', margin: '10px 0', fontSize: '2.5rem'}}>{target.username}</h1>
             <div style={{textAlign: 'left', marginTop: '20px', background: 'rgba(0,0,0,0.03)', padding: '15px', borderRadius: '8px'}}>
-                <strong>Their Wishlist:</strong>
+                <strong>{t('theirWishlist')}:</strong>
                 <p style={{fontStyle: 'italic', margin: '5px 0', whiteSpace: 'pre-wrap'}}>
-                    {target.wishlist || "They didn't ask for anything specific! Get creative! 🎨"}
+                    {target.wishlist || t('noWishlist')}
                 </p>
             </div>
         </div>
@@ -217,14 +219,14 @@ export default function Lobby() {
       
       <div className="grid-2 fade-in">
         <div className="card">
-          <h3>👥 Participants ({participants.length})</h3>
+          <h3>👥 {t('participants')} ({participants.length})</h3>
           <ul>
             {participants.map(p => (
               <li key={p.id}>
                 <div>
-                    <span style={{fontWeight: 'bold', display: 'block'}}>{p.profiles?.username || "Unknown"}</span>
+                    <span style={{fontWeight: 'bold', display: 'block'}}>{p.profiles?.username || t('unknown')}</span>
                     <div style={{fontSize: '0.75rem', marginTop: '4px', display: 'flex', gap: '5px', flexWrap: 'wrap'}}>
-                        {p.user_id === eventData?.host_id && <span style={{background: '#FFD700', padding: '2px 6px', borderRadius: '4px'}}>👑 Host</span>}
+                        {p.user_id === eventData?.host_id && <span style={{background: '#FFD700', padding: '2px 6px', borderRadius: '4px'}}>👑 {t('hostTag')}</span>}
                         {p.group_id && <span style={{background: '#ffcdd2', padding: '2px 6px', borderRadius: '4px'}}>🚫 G: {p.group_id}</span>}
                         {p.strict_pool_id && <span style={{background: '#c8e6c9', padding: '2px 6px', borderRadius: '4px'}}>🔒 Pool: {p.strict_pool_id}</span>}
                         {p.exclusions && p.exclusions.length > 0 && <span style={{background: '#eee', padding: '2px 6px', borderRadius: '4px'}}>⛔ {p.exclusions.length} Exclusions</span>}
@@ -241,15 +243,15 @@ export default function Lobby() {
         </div>
         
         <div className="card">
-          <h3>📝 Your Wishlist</h3>
-          <p style={{fontSize: '0.9em', color: '#666'}}>Help your Secret Santa by listing things you like!</p>
+          <h3>📝 {t('yourWishlistTitle')}</h3>
+          <p style={{fontSize: '0.9em', color: '#666'}}>{t('wishlistHelp')}</p>
           <textarea 
             rows="5"
             value={myWishlist} 
             onChange={e => setMyWishlist(e.target.value)}
-            placeholder="I love vintage mugs, sci-fi books, and dark chocolate..."
+            placeholder={t('wishlistPlaceholder')}
           />
-          <button onClick={updateWishlist}>Save Wishlist</button>
+          <button onClick={updateWishlist}>{t('saveWishlist')}</button>
         </div>
       </div>
 
@@ -260,9 +262,9 @@ export default function Lobby() {
             onClick={handleStartEvent} 
             style={{ padding: '15px 40px', fontSize: '1.2rem' }}
           >
-            🚀 START EVENT (HOST ONLY)
+            🚀 {t('startEvent')}
           </button>
-          <p style={{color: 'rgba(255,255,255,0.7)', marginTop: '10px'}}>Only click this when everyone has joined!</p>
+          <p style={{color: 'rgba(255,255,255,0.7)', marginTop: '10px'}}>{t('startEventHelp')}</p>
         </div>
       )}
 
@@ -271,11 +273,11 @@ export default function Lobby() {
         <div className="modal-overlay" onClick={() => setSelectedParticipant(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{maxHeight: '90vh', overflowY: 'auto'}}>
             <button className="close-btn" onClick={() => setSelectedParticipant(null)}>×</button>
-            <h3 style={{marginTop: 0}}>Manage: {selectedParticipant.profiles.username}</h3>
+            <h3 style={{marginTop: 0}}>{t('manage')}: {selectedParticipant.profiles.username}</h3>
             
             <div style={{marginBottom: '20px'}}>
-                <label style={{display:'block', marginBottom: '5px'}}><strong>🚫 Exclusion Group</strong></label>
-                <p style={{fontSize: '0.8em', color: '#666', marginTop: 0}}>Cannot match with others in same group (e.g. "Couple").</p>
+                <label style={{display:'block', marginBottom: '5px'}}><strong>🚫 {t('exclusionGroup')}</strong></label>
+                <p style={{fontSize: '0.8em', color: '#666', marginTop: 0}}>{t('exclusionGroupHelp')}</p>
                 <input 
                     value={constraintGroup} 
                     onChange={e => setConstraintGroup(e.target.value)}
@@ -284,8 +286,8 @@ export default function Lobby() {
             </div>
 
             <div style={{marginBottom: '20px'}}>
-                <label style={{display:'block', marginBottom: '5px'}}><strong>🔒 Strict Inclusion Pool</strong></label>
-                <p style={{fontSize: '0.8em', color: '#666', marginTop: 0}}>Can ONLY match with others in this pool (e.g. "Kids").</p>
+                <label style={{display:'block', marginBottom: '5px'}}><strong>🔒 {t('strictPool')}</strong></label>
+                <p style={{fontSize: '0.8em', color: '#666', marginTop: 0}}>{t('strictPoolHelp')}</p>
                 <input 
                     value={constraintStrictPool} 
                     onChange={e => setConstraintStrictPool(e.target.value)}
@@ -294,8 +296,8 @@ export default function Lobby() {
             </div>
 
             <div style={{marginBottom: '20px'}}>
-                <label style={{display:'block', marginBottom: '5px'}}><strong>⛔ Specific Exclusions</strong></label>
-                <p style={{fontSize: '0.8em', color: '#666', marginTop: 0}}>Select people this user CANNOT draw.</p>
+                <label style={{display:'block', marginBottom: '5px'}}><strong>⛔ {t('specificExclusions')}</strong></label>
+                <p style={{fontSize: '0.8em', color: '#666', marginTop: 0}}>{t('specificExclusionsHelp')}</p>
                 <div style={{maxHeight: '150px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', borderRadius: '8px'}}>
                     {participants
                         .filter(p => p.user_id !== selectedParticipant.user_id)
@@ -314,7 +316,7 @@ export default function Lobby() {
                 </div>
             </div>
 
-            <button onClick={saveConstraints} style={{marginBottom: '20px'}}>Save Constraints</button>
+            <button onClick={saveConstraints} style={{marginBottom: '20px'}}>{t('saveConstraints')}</button>
 
              {/* Danger Zone */}
              <div style={{borderTop: '1px solid #eee', paddingTop: '20px'}}>
@@ -322,7 +324,7 @@ export default function Lobby() {
                   onClick={removeParticipant} 
                   style={{backgroundColor: '#e63946', color: 'white'}}
                 >
-                  ⚠️ Remove Participant
+                  ⚠️ {t('removeParticipant')}
                 </button>
             </div>
           </div>
