@@ -13,6 +13,9 @@ export default function Dashboard() {
   const [joinCode, setJoinCode] = useState('');
   const [myEvents, setMyEvents] = useState([]);
   
+  // Loading state for logout to prevent double-clicks
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
   // Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newEventName, setNewEventName] = useState('');
@@ -100,19 +103,28 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    
     // We attempt to sign out. If the token is already invalid (403),
-    // Supabase client will still remove the local session, which triggers
-    // the AuthContext update. We can safely ignore the server error here.
-    const { error } = await supabase.auth.signOut();
-    if (error) console.warn("Logout server error (harmless):", error.message);
+    // Supabase client will still remove the local session automatically.
+    // We don't need to log the error to the console.
+    await supabase.auth.signOut();
+    
+    // AuthContext will detect the change and redirect automatically
   };
 
   return (
     <div className="container">
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
         <h1>{t('dashboard')}</h1>
-        <button className="outline" onClick={handleLogout} style={{width: 'auto'}}>
-          {t('signOut')}
+        <button 
+          className="outline" 
+          onClick={handleLogout} 
+          disabled={isLoggingOut}
+          style={{width: 'auto', opacity: isLoggingOut ? 0.7 : 1}}
+        >
+          {isLoggingOut ? t('processing') : t('signOut')}
         </button>
       </div>
 
