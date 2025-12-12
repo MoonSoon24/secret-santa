@@ -99,11 +99,19 @@ export default function Dashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    // We attempt to sign out. If the token is already invalid (403),
+    // Supabase client will still remove the local session, which triggers
+    // the AuthContext update. We can safely ignore the server error here.
+    const { error } = await supabase.auth.signOut();
+    if (error) console.warn("Logout server error (harmless):", error.message);
+  };
+
   return (
     <div className="container">
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
         <h1>{t('dashboard')}</h1>
-        <button className="outline" onClick={() => supabase.auth.signOut()} style={{width: 'auto'}}>
+        <button className="outline" onClick={handleLogout} style={{width: 'auto'}}>
           {t('signOut')}
         </button>
       </div>
