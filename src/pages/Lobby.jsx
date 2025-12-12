@@ -163,16 +163,26 @@ export default function Lobby() {
     confirmAction(
       `Are you sure you want to remove ${selectedParticipant.profiles.username}?`,
       async () => {
-        const { error } = await supabase
+        // Request count: 'exact' to ensure we know if a row was actually deleted
+        const { error, count } = await supabase
           .from('participants')
-          .delete()
+          .delete({ count: 'exact' })
           .eq('id', selectedParticipant.id);
 
         if (error) {
           notify("Error removing participant: " + error.message, "error");
+        } else if (count === 0) {
+          // If count is 0, the delete failed (e.g. permission denied or ID mismatch)
+          // Do NOT update local state in this case
+          notify("Unable to remove participant. Please check permissions.", "error");
         } else {
           notify("Participant removed.", "success");
+          
+          // Only perform optimistic update if the DB confirmed deletion
+          setParticipants(prev => prev.filter(p => p.id !== selectedParticipant.id));
+          
           setSelectedParticipant(null);
+          fetchData();
         }
       }
     );
