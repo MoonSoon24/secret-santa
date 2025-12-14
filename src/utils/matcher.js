@@ -1,6 +1,14 @@
 export function drawNames(participants) {
+  // Filter out spectators (is_participating === false)
+  // We assume undefined/null means true (participating)
+  const activeParticipants = participants.filter(p => p.is_participating !== false);
+
+  if (activeParticipants.length < 2) {
+    throw new Error("Not enough active participants to draw! (Minimum 2)");
+  }
+
   // Deep copy to avoid mutating original state
-  const pool = [...participants];
+  const pool = [...activeParticipants];
   let valid = false;
   let attempts = 0;
   let shuffled;

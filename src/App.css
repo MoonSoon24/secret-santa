@@ -388,6 +388,36 @@ body.dark-mode .wheel-arrow {
   color: #2C3E50;
 }
 
+/* Anti-Peeking Blur */
+.blur-overlay {
+  filter: blur(15px);
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.3s ease;
+}
+
+.blur-overlay:hover {
+  filter: blur(10px);
+}
+
+.blur-overlay.revealed {
+  filter: blur(0);
+}
+
+.click-to-reveal-hint {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+
 /* --- Notification System --- */
 .snackbar {
   position: fixed;
@@ -432,4 +462,23 @@ body.dark-mode .wheel-arrow {
   justify-content: center;
   gap: 15px;
   margin-top: 25px;
+}
+
+/* Kiosk Mode Styles */
+.kiosk-card {
+  max-width: 500px; 
+  margin: 0 auto; 
+  text-align: center;
+}
+.kiosk-avatar {
+  font-size: 4rem; 
+  margin-bottom: 20px; 
+  background: white; 
+  width: 100px; 
+  height: 100px; 
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  border-radius: 50%; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
