@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
-import { LanguageProvider, useLanguage } from './context/LanguageContext'; // Import LanguageContext
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Lobby from './pages/Lobby';
@@ -89,11 +89,11 @@ const MainLayout = () => {
 export default function App() {
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <LanguageProvider>
+      <LanguageProvider>
+        <NotificationProvider>
           <MainLayout />
-        </LanguageProvider>
-      </NotificationProvider>
+        </NotificationProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

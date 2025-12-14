@@ -149,7 +149,7 @@ export default function Lobby() {
       .update({ wishlist: myWishlist })
       .eq('event_id', eventId)
       .eq('user_id', user.id);
-    notify("Wishlist updated!", "success");
+    notify(t('wishlistUpdated'), "success");
   }
 
   async function updateNickname() {
@@ -157,7 +157,7 @@ export default function Lobby() {
       .update({ nickname: myNickname })
       .eq('event_id', eventId)
       .eq('user_id', user.id);
-    notify("Nickname updated!", "success");
+    notify(t('nicknameUpdated'), "success");
     setShowNicknameModal(false);
   }
 
@@ -189,9 +189,9 @@ export default function Lobby() {
         notify(error.message, "error");
     } else if (data && data.length === 0) {
         // This catches the case where request succeeds (204) but RLS filtered it out
-        notify("Update failed. You might not have permission.", "error");
+        notify(t('updateFailed'), "error");
     } else {
-        notify("Event settings updated!", "success");
+        notify(t('eventSettingsUpdated'), "success");
         setShowSettingsModal(false);
     }
   }
@@ -218,7 +218,7 @@ export default function Lobby() {
 
       if (error) notify(error.message, "error");
       else {
-          notify("Nickname updated!", "success");
+          notify(t('nicknameUpdated'), "success");
           // Update local selected participant to reflect change immediately in UI
           setSelectedParticipant(prev => ({ ...prev, nickname: hostNicknameInput }));
           setIsEditingHostNickname(false);
@@ -241,7 +241,7 @@ export default function Lobby() {
         .eq('id', selectedParticipant.id);
     
     if (error) notify(error.message, "error");
-    else notify(newVal ? "Promoted to Co-Host!" : "Demoted to Member", "success");
+    else notify(newVal ? t('promoted') : t('demoted'), "success");
     setSelectedParticipant({...selectedParticipant, is_admin: newVal});
   }
 
@@ -258,7 +258,7 @@ export default function Lobby() {
         .eq('id', selectedParticipant.id);
     
     if (error) notify(error.message, "error");
-    else notify("Constraints saved!", "success");
+    else notify(t('constraintsSaved'), "success");
     
     setSelectedParticipant(null);
   };
@@ -266,7 +266,7 @@ export default function Lobby() {
   const removeParticipant = () => {
     if (!selectedParticipant) return;
     confirmAction(
-      `Are you sure you want to remove ${selectedParticipant.nickname || selectedParticipant.profiles.username}?`,
+      t('confirmRemove', { name: selectedParticipant.nickname || selectedParticipant.profiles.username }),
       async () => {
         const { error, count } = await supabase
           .from('participants')
@@ -274,9 +274,9 @@ export default function Lobby() {
           .eq('id', selectedParticipant.id);
 
         if (error) notify("Error: " + error.message, "error");
-        else if (count === 0) notify("Unable to remove participant.", "error");
+        else if (count === 0) notify(t('unableToRemove'), "error");
         else {
-          notify("Participant removed.", "success");
+          notify(t('participantRemoved'), "success");
           setParticipants(prev => prev.filter(p => p.id !== selectedParticipant.id));
           setSelectedParticipant(null);
           fetchData();
@@ -287,7 +287,7 @@ export default function Lobby() {
 
   const handleStartEvent = () => {
     confirmAction(
-      "This will lock the room and draw names. It cannot be undone!",
+      t('confirmStart'),
       async () => {
         try {
           const updates = drawNames(participants);
@@ -298,7 +298,7 @@ export default function Lobby() {
           }
           await supabase.from('events').update({ status: 'LOCKED' }).eq('id', eventId);
           fetchData();
-          notify("Event Started! Good luck!", "success");
+          notify(t('eventStarted'), "success");
         } catch (err) {
           notify(err.message, "error");
         }
@@ -308,7 +308,7 @@ export default function Lobby() {
 
   const handleUndoSpin = () => {
     confirmAction(
-      "Are you sure? This will RESET all matches and send everyone back to the lobby.",
+      t('confirmReset'),
       async () => {
         await supabase.from('participants')
             .update({ target_id: null, is_revealed: false })
@@ -317,7 +317,7 @@ export default function Lobby() {
         await supabase.from('events').update({ status: 'LOBBY' }).eq('id', eventId);
         setTarget(null);
         fetchData();
-        notify("Event reset! Constraints can be modified now.", "success");
+        notify(t('eventReset'), "success");
       }
     );
   };
@@ -334,7 +334,7 @@ export default function Lobby() {
       </div>
 
       <div style={{textAlign: 'center', marginBottom: '30px'}}>
-        <h1>{eventData?.name || "Secret Santa"}</h1>
+        <h1>{eventData?.name || t('appName')}</h1>
         <div style={{color: 'var(--text-main)', background: 'rgba(255,255,255,0.8)', display:'inline-block', padding: '15px 25px', borderRadius: '15px', maxWidth: '600px'}}>
             <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
                 <div style={{fontSize: '1.2em'}}>
@@ -349,10 +349,10 @@ export default function Lobby() {
 
                 <div style={{display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', fontSize: '0.9rem', color: '#444'}}>
                     <div>
-                        💰 <strong>{t('budget')}:</strong> {eventData?.budget || 'No Limit'}
+                        💰 <strong>{t('budget')}:</strong> {eventData?.budget || t('noLimit')}
                     </div>
                     <div>
-                        📅 <strong>{t('date')}:</strong> {eventData?.gift_exchange_date || 'TBD'}
+                        📅 <strong>{t('date')}:</strong> {eventData?.gift_exchange_date || t('tbd')}
                     </div>
                 </div>
             </div>
@@ -608,7 +608,7 @@ export default function Lobby() {
             {/* If not admin and viewing self, show message or nothing else */}
             {!isAdmin && selectedParticipant.user_id === user.id && (
                 <p style={{fontSize: '0.9em', color: '#666', fontStyle: 'italic'}}>
-                    You can only edit your nickname here. Ask the host for other changes!
+                    {t('hostManageSelfWarning')}
                 </p>
             )}
 
@@ -635,7 +635,7 @@ export default function Lobby() {
                 <label><strong>{t('date')}</strong></label>
                 <input type="date" value={settingsDate} onChange={e => setSettingsDate(e.target.value)} />
 
-                <button onClick={saveSettings}>{t('saveConstraints')}</button>
+                <button onClick={saveSettings}>{t('saveLobby')}</button>
             </div>
           </div>
       )}

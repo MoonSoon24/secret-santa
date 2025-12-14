@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   const createEvent = async (e) => {
     e.preventDefault();
-    if (!newEventName) return notify("Please enter a name", "error");
+    if (!newEventName) return notify(t('enterNameError'), "error");
 
     const code = Math.floor(100000 + Math.random() * 900000).toString(); 
     
@@ -53,13 +53,13 @@ export default function Dashboard() {
         host_id: user.id, 
         status: 'LOBBY',
         name: newEventName,
-        budget: newEventBudget || 'No Limit'
+        budget: newEventBudget || t('noLimit')
       }])
       .select()
       .single();
 
     if (error) {
-      notify("Error creating event: " + error.message, "error");
+      notify(t('createEventError') + error.message, "error");
     } else {
       await joinEventLogic(code); 
     }
@@ -74,7 +74,7 @@ export default function Dashboard() {
     const { data: event, error: eventError } = await supabase
       .from('events').select('*').eq('code', code).single();
     
-    if (!event || eventError) return notify("Invalid Code", "error");
+    if (!event || eventError) return notify(t('invalidCode'), "error");
     
     // Check if already joined
     const { data: existing } = await supabase
@@ -89,7 +89,7 @@ export default function Dashboard() {
         return;
     }
 
-    if (event.status !== 'LOBBY') return notify("Event has already started!", "error");
+    if (event.status !== 'LOBBY') return notify(t('eventStartedError'), "error");
 
     const { error: joinError } = await supabase
       .from('participants')
@@ -106,12 +106,7 @@ export default function Dashboard() {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     
-    // We attempt to sign out. If the token is already invalid (403),
-    // Supabase client will still remove the local session automatically.
-    // We don't need to log the error to the console.
     await supabase.auth.signOut();
-    
-    // AuthContext will detect the change and redirect automatically
   };
 
   return (
@@ -170,7 +165,7 @@ export default function Dashboard() {
             {myEvents.map(ev => (
               <li key={ev.id}>
                 <div>
-                    <strong>{ev.name || "Secret Santa Event"}</strong>
+                    <strong>{ev.name || t('defaultEventName')}</strong>
                     <span style={{fontSize: '0.8em', color: '#666', marginLeft: '10px'}}>
                         ({t('code')}: {ev.code})
                     </span>
@@ -191,7 +186,7 @@ export default function Dashboard() {
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setShowCreateModal(false)}>×</button>
+            <button className="close-btn" onClick={() => setShowCreateModal(false)}></button>
             <h2 style={{textAlign: 'center', marginBottom: '20px'}}>{t('createLobbyModalTitle')}</h2>
             <form onSubmit={createEvent}>
               <label><strong>{t('lobbyNameLabel')}</strong></label>

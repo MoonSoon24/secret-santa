@@ -50,7 +50,7 @@ export default function Reveal() {
     // Kiosk Mode Logic
     if (isKioskMode) {
         if (!isUserAdmin) {
-            notify("Only admins can use Kiosk Mode", "error");
+            notify(t('kioskAdminError'), "error");
             navigate(`/lobby/${eventId}`);
             return;
         }
@@ -168,7 +168,7 @@ export default function Reveal() {
       
       if (error) {
           console.error("Error loading kiosk queue:", error);
-          notify("Error loading queue", "error");
+          notify(t('queueError'), "error");
           return;
       }
 
@@ -205,7 +205,7 @@ export default function Reveal() {
   const fetchKioskTarget = async (currentUser) => {
       if (!currentUser.target_id) {
           // Should not happen if matches exist
-          notify("User has no target!", "error");
+          notify(t('noTargetError'), "error");
           return;
       }
 
@@ -253,7 +253,7 @@ export default function Reveal() {
 
   const handleResetEvent = () => {
     confirmAction(
-      "Are you sure? This will RESET all matches and send everyone back to the lobby.",
+      t('confirmReset'),
       async () => {
         await supabase.from('participants').update({ target_id: null, is_revealed: false }).eq('event_id', eventId);
         await supabase.from('events').update({ status: 'LOBBY' }).eq('id', eventId);
@@ -266,7 +266,7 @@ export default function Reveal() {
   
   if (isFinished && isKioskMode) return (
       <div className="container" style={{textAlign: 'center', color: 'white'}}>
-          <h1>🎉 {t('allRevealed')}</h1>
+          <h1>脂 {t('allRevealed')}</h1>
           <Link to={`/lobby/${eventId}`}>
             <button className="outline" style={{borderColor: '#fff', color: '#fff'}}>{t('backToLobby')}</button>
           </Link>
@@ -409,7 +409,7 @@ export default function Reveal() {
         <div style={{marginTop: '50px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '20px'}}>
             <p style={{color: '#aaa', fontSize: '0.8rem'}}>{t('hostControls')}</p>
             <button onClick={handleResetEvent} style={{background: 'rgba(0,0,0,0.5)', fontSize: '0.9rem', width: 'auto'}}>
-                🔄 {t('resetEvent')}
+                売 {t('resetEvent')}
             </button>
         </div>
       )}

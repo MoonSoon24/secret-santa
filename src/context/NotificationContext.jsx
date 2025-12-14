@@ -1,8 +1,11 @@
 import { createContext, useContext, useState, useCallback } from 'react';
+import { useLanguage } from './LanguageContext';
 
 const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
+  const { t } = useLanguage();
+
   // --- Snackbar State ---
   const [snackbar, setSnackbar] = useState({ show: false, message: '', type: 'info' });
   
@@ -51,11 +54,11 @@ export function NotificationProvider({ children }) {
       {confirmModal.show && (
         <div className="modal-overlay confirm-overlay" onClick={closeConfirm}>
           <div className="modal-content confirm-box" onClick={e => e.stopPropagation()}>
-            <h3 style={{marginTop: 0}}>Wait a second...</h3>
+            <h3 style={{marginTop: 0}}>{t('waitTitle')}</h3>
             <p>{confirmModal.message}</p>
             <div className="confirm-actions">
-              <button className="outline" onClick={closeConfirm} style={{borderColor: '#ccc', color: '#666'}}>Cancel</button>
-              <button className="primary-action" onClick={handleConfirm}>Yes, Continue</button>
+              <button className="outline" onClick={closeConfirm} style={{borderColor: '#ccc', color: '#666'}}>{t('cancel')}</button>
+              <button className="primary-action" onClick={handleConfirm}>{t('confirm')}</button>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ const LanguageContext = createContext();
 export const translations = {
   en: {
     // Auth
+    appName: "Secret Santa",
     welcome: "Welcome back!",
     joinFun: "Join the holiday fun!",
     createAccount: "Create Account",
@@ -25,6 +26,13 @@ export const translations = {
     useExisting: "Use existing account",
     createNew: "Create a new account",
     
+    // NotificationContext
+    waitTitle: "Wait a second...",
+    cancel: "Cancel",
+    confirm: "Yes, Continue",
+    error: "Error",
+    success: "Success",
+
     // Dashboard
     dashboard: "Dashboard",
     signOut: "Sign Out",
@@ -43,6 +51,11 @@ export const translations = {
     budgetLabel: "Budget (Optional)",
     budgetPlaceholder: "e.g. 100k - 250k",
     createAndJoin: "Create & Join",
+    enterNameError: "Please enter a name",
+    createEventError: "Error creating event: ",
+    invalidCode: "Invalid Code",
+    eventStartedError: "Event has already started!",
+    defaultEventName: "Secret Santa Event",
     
     // Lobby
     code: "Code",
@@ -81,6 +94,23 @@ export const translations = {
     promoteToCoHost: "Promote to Co-Host",
     demoteToMember: "Demote to Member",
     kioskMode: "Kiosk Mode",
+    wishlistUpdated: "Wishlist updated!",
+    nicknameUpdated: "Nickname updated!",
+    updateFailed: "Update failed. You might not have permission.",
+    eventSettingsUpdated: "Event settings updated!",
+    promoted: "Promoted to Co-Host!",
+    demoted: "Demoted to Member",
+    constraintsSaved: "Constraints saved!",
+    confirmRemove: "Are you sure you want to remove {name}?",
+    unableToRemove: "Unable to remove participant.",
+    participantRemoved: "Participant removed.",
+    confirmStart: "This will lock the room and draw names. It cannot be undone!",
+    eventStarted: "Event Started! Good luck!",
+    confirmReset: "Are you sure? This will RESET all matches and send everyone back to the lobby.",
+    eventReset: "Event reset! Constraints can be modified now.",
+    noLimit: "No Limit",
+    tbd: "TBD",
+    hostManageSelfWarning: "You can only edit your nickname here. Ask the host for other changes!",
     
     // Reveal
     secretTarget: "Your Target",
@@ -98,6 +128,9 @@ export const translations = {
     iAm: "I am",
     gotIt: "Got it!",
     allRevealed: "All done! Everyone has seen their target.",
+    kioskAdminError: "Only admins can use Kiosk Mode",
+    queueError: "Error loading queue",
+    noTargetError: "User has no target!",
     
     // Modal & General
     chooseLanguage: "Choose your language",
@@ -107,6 +140,7 @@ export const translations = {
   },
   id: {
     // Auth
+    appName: "Secret Santa",
     welcome: "Selamat datang!",
     joinFun: "Bergabunglah dengan kami!",
     createAccount: "Buat Akun Baru",
@@ -127,6 +161,13 @@ export const translations = {
     useExisting: "Gunakan akun yang sudah ada",
     createNew: "Buat akun baru untuk memulai",
 
+    // NotificationContext
+    waitTitle: "Tunggu sebentar...",
+    cancel: "Batal",
+    confirm: "Ya, Lanjutkan",
+    error: "Kesalahan",
+    success: "Berhasil",
+
     // Dashboard
     dashboard: "Menu Utama",
     signOut: "Keluar",
@@ -145,6 +186,11 @@ export const translations = {
     budgetLabel: "Anggaran (Opsional)",
     budgetPlaceholder: "cth. 100rb - 250rb",
     createAndJoin: "Buat & Gabung",
+    enterNameError: "Mohon masukkan nama",
+    createEventError: "Gagal membuat event: ",
+    invalidCode: "Kode Tidak Valid",
+    eventStartedError: "Event sudah dimulai!",
+    defaultEventName: "Event Secret Santa",
 
     // Lobby
     code: "Kode",
@@ -175,6 +221,7 @@ export const translations = {
     removeParticipant: "Hapus Peserta",
     lobbySettings: "Pengaturan Lobby",
     updateSettings: "Update Pengaturan",
+    saveLobby: "Simpan Pengaturan",
     saveNickname: "Simpan Nama Panggilan",
     editProfile: "Edit Profil",
     spectatorMode: "Mode Penonton",
@@ -182,6 +229,23 @@ export const translations = {
     promoteToCoHost: "Jadikan Co-Host",
     demoteToMember: "Jadikan Member Biasa",
     kioskMode: "Mode Kiosk",
+    wishlistUpdated: "Wishlist diperbarui!",
+    nicknameUpdated: "Nama panggilan diperbarui!",
+    updateFailed: "Gagal memperbarui. Anda mungkin tidak memiliki izin.",
+    eventSettingsUpdated: "Pengaturan event diperbarui!",
+    promoted: "Dipromosikan menjadi Co-Host!",
+    demoted: "Diturunkan menjadi Member",
+    constraintsSaved: "Batasan disimpan!",
+    confirmRemove: "Apakah Anda yakin ingin menghapus {name}?",
+    unableToRemove: "Tidak dapat menghapus peserta.",
+    participantRemoved: "Peserta dihapus.",
+    confirmStart: "Ini akan mengunci room dan mengundi nama. Tidak bisa dibatalkan!",
+    eventStarted: "Event Dimulai! Semoga beruntung!",
+    confirmReset: "Apakah Anda yakin? Ini akan MERESET semua pasangan dan mengembalikan semua orang ke lobby.",
+    eventReset: "Event di-reset! Batasan bisa diubah sekarang.",
+    noLimit: "Tidak Terbatas",
+    tbd: "Akan Ditentukan",
+    hostManageSelfWarning: "Anda hanya bisa mengedit nama panggilan di sini. Minta host untuk perubahan lain!",
 
     // Reveal
     secretTarget: "Target Anda",
@@ -199,6 +263,9 @@ export const translations = {
     iAm: "Saya adalah",
     gotIt: "Mengerti!",
     allRevealed: "Selesai! Semua orang sudah melihat targetnya.",
+    kioskAdminError: "Hanya admin yang bisa menggunakan Mode Kiosk",
+    queueError: "Gagal memuat antrian",
+    noTargetError: "User tidak memiliki target!",
 
     // Modal & General
     chooseLanguage: "Pilih Bahasa Anda",
@@ -232,8 +299,13 @@ export function LanguageProvider({ children }) {
     selectLanguage(newLang);
   };
 
-  const t = (key) => {
-    return translations[language][key] || key;
+  const t = (key, args = {}) => {
+    let text = translations[language][key] || key;
+    // Simple replacements for arguments like {name}
+    Object.keys(args).forEach(arg => {
+      text = text.replace(new RegExp(`{${arg}}`, 'g'), args[arg]);
+    });
+    return text;
   };
 
   return (

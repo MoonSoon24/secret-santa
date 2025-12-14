@@ -165,7 +165,7 @@ export default function Auth() {
     <div className="container" style={{display: 'flex', alignItems: 'center', minHeight: '80vh'}}>
       <div className="card auth-card fade-in" style={{width: '100%'}}>
         <div style={{fontSize: '4rem', marginBottom: '10px'}}>🎅</div>
-        <h1 style={{color: 'var(--primary)', fontSize: '2rem'}}>Secret Santa</h1>
+        <h1 style={{color: 'var(--primary)', fontSize: '2rem'}}>{t('appName')}</h1>
         
         {/* Dynamic Header Text */}
         <p style={{marginBottom: '30px', color: 'var(--text-light)'}}>
